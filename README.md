@@ -98,11 +98,9 @@ See [hardware/hardware.md](hardware/hardware.md) for the full parts list.
 
 ## Authors
 
-- tharani165
+-T Hemachandiran
+- Tharani R 
 
-## License
-
-Not yet chosen.
 
 ## Project Structure
 
