@@ -1,67 +1,176 @@
-# MediBot — Medicine Reminder Bot
+# MediBot – Smart Medicine Reminder & Monitoring System
 
-A Flask-based medicine reminder system that schedules patient medication times and places a real phone call — via an Android device — when a dose is due.
+> An IoT-based healthcare prototype that assists elderly patients with medication adherence by combining automated reminders, a web-based management dashboard, and Android-powered voice call notifications.
 
-## Project Overview
+![Python](https://img.shields.io/badge/Python-3.10-blue)
+![Flask](https://img.shields.io/badge/Flask-Web%20Application-black)
+![IoT](https://img.shields.io/badge/IoT-Healthcare-green)
+![Arduino](https://img.shields.io/badge/Arduino-Embedded-blue)
+![Android](https://img.shields.io/badge/Android-SL4A-brightgreen)
 
-Missed medication doses are a common problem, especially for elderly or forgetful patients. MediBot lets a caregiver register a patient's medicines and reminder time through a simple web dashboard. When the scheduled time arrives, MediBot triggers an automated phone call to the patient's number and speaks an audible alert, so the reminder can't be missed even if the patient isn't looking at a screen.
+---
 
-## Problem Statement
+# Project Overview
 
-Push notifications and app alarms are easy to ignore or dismiss, and many patients (particularly older adults) don't reliably check reminder apps. A more attention-grabbing, low-friction reminder mechanism is needed.
+Medication non-adherence is a major challenge among elderly patients, particularly those living alone or managing multiple prescriptions. Traditional alarm-based reminder systems can be easily ignored, reducing their effectiveness.
 
-## Solution
+MediBot is an IoT-based healthcare prototype that integrates embedded hardware with a web application to help caregivers manage medication schedules while automatically reminding patients through Android phone calls and voice alerts.
 
-MediBot combines a Flask web server with an Android phone (running SL4A) to place an actual voice call at the scheduled time, plus a text-to-speech alert. Caregivers manage reminders from a browser; the calling device just needs to stay reachable.
+The project combines embedded systems, web technologies, and Android automation to provide a practical medication reminder solution.
 
-## Features
+---
 
-- Add medicine reminders (patient name, phone number, time, medicine list with dosages) through a web form
-- Store reminders in a local JSON file — no external database required
-- Automatically trigger a phone call when a reminder's time is reached
-- Text-to-speech alert spoken on the Android device before the call is placed
-- Reports call outcome (answered / rejected) back to the server
-- Live dashboard split into "Active" and "Finished" reminders with countdowns
+# Problem Statement
 
-## Software Used
+Many elderly patients forget to take medicines on time due to memory loss, busy schedules, or the absence of caregivers. Conventional reminder methods such as alarms and mobile notifications are often ignored or dismissed.
 
-See [software/software_used.md](software/software_used.md) for the full list. In short: Python, Flask, Requests, Jinja2, HTML/CSS/JS, and SL4A's `androidhelper` module.
+A reliable reminder mechanism capable of actively notifying patients and allowing caregivers to monitor scheduled reminders can significantly improve medication adherence.
 
-## System Architecture
+---
+
+# Proposed Solution
+
+MediBot provides:
+
+- A web dashboard for caregivers to manage medicine schedules
+- Automatic reminder scheduling
+- Android-based voice call notifications
+- Text-to-Speech (TTS) reminders
+- Reminder status tracking
+- Local JSON-based reminder storage
+
+The embedded hardware and Android device work together with the web application to deliver timely reminders.
+
+---
+
+# Features
+
+- Add patient medicine schedules
+- Manage multiple medicines per reminder
+- Automatic reminder scheduling
+- Android phone call notifications
+- Text-to-Speech medicine reminders
+- Reminder completion tracking
+- Live dashboard with Active and Finished reminders
+- Local JSON data storage
+- Lightweight Flask backend
+
+---
+
+# Technology Stack
+
+### Embedded / IoT
+
+- Arduino
+- Android (SL4A)
+- IoT Healthcare Prototype
+
+### Software
+
+- Python
+- Flask
+- HTML
+- CSS
+- JavaScript
+- Jinja2
+- Requests
+
+### Data Storage
+
+- JSON
+
+---
+
+# System Architecture
 
 ```
-┌────────────────┐        HTTP         ┌───────────────────┐
-│  Browser (UI)   │ ───────────────────▶ │   server/app.py     │
-│  templates/     │ ◀─────────────────── │   Flask Server       │
-│  static/        │      JSON data       │   data/data.json     │
-└────────────────┘                       └─────────┬──────────┘
-                                                     │ /make_call?phone=...
-                                                     ▼
-                                          ┌───────────────────┐
-                                          │  Android Device      │
-                                          │  android/call_reminder.py │
-                                          │  (SL4A androidhelper) │
-                                          └─────────┬──────────┘
-                                                     │ /call_status
-                                                     ▼
-                                          back to Flask Server
+Caregiver
+     │
+     ▼
+ Web Dashboard (Flask)
+     │
+     ▼
+ Reminder Scheduler
+     │
+     ▼
+ Android Device (SL4A)
+     │
+     ▼
+ Text-to-Speech
+     │
+     ▼
+ Phone Call Reminder
+     │
+     ▼
+ Patient
 ```
 
-## Working Principle
+---
 
-1. A caregiver submits a reminder (name, phone, time, medicines) through the web dashboard.
-2. `server/app.py` stores it in `server/data/data.json`.
-3. When the reminder's scheduled time is reached, `/trigger_calls` calls the Android device's `/make_call` endpoint.
-4. `android/call_reminder.py`, running on the Android device via SL4A, speaks a TTS alert and places the phone call.
-5. Once the call ends, the Android device reports whether it was answered or rejected back to the Flask server via `/call_status`.
+# Workflow
 
-## Workflow
+1. Caregiver registers a patient's medication schedule through the web dashboard.
+2. Reminder information is stored locally in JSON format.
+3. The Flask scheduler continuously monitors reminder timings.
+4. When the scheduled time arrives, the Flask server triggers the Android device.
+5. The Android device announces the reminder using Text-to-Speech and places a phone call.
+6. Call status is sent back to the server.
+7. The dashboard updates the reminder status automatically.
 
-Add Reminder → Stored in JSON → Time Reached → Call Triggered → TTS Alert + Phone Call → Call Status Reported → Dashboard Updated
+---
 
-## Hardware Components
+# My Contribution
 
-See [hardware/hardware.md](hardware/hardware.md) for the full parts list.
+This project was developed as a collaborative IoT healthcare project.
+
+### My primary contributions focused on the software development side, including:
+
+- Designed and developed the Flask-based web dashboard.
+- Implemented the backend reminder scheduling system using Python and Flask.
+- Developed the frontend interface using HTML, CSS, JavaScript, and Jinja2.
+- Designed the JSON-based reminder storage workflow.
+- Integrated the Flask backend with the Android reminder application.
+- Developed reminder status tracking and dashboard updates.
+- Participated in software testing, debugging, and system integration.
+
+---
+
+# Repository Structure
+
+```
+MediBot---Medicine-Reminder-Bot/
+
+├── android/
+│   └── call_reminder.py
+│
+├── server/
+│   ├── app.py
+│   ├── templates/
+│   ├── static/
+│   ├── data/
+│   └── requirements.txt
+│
+├── hardware/
+├── software/
+├── docs/
+├── images/
+├── demo/
+└── README.md
+```
+
+---
+
+# Hardware Components
+
+See **hardware/hardware.md** for the complete list of hardware components used in the IoT prototype.
+
+---
+
+# Software Components
+
+See **software/software_used.md** for all software frameworks and libraries used in the project.
+
+---
 
 ## Project Images
 
@@ -96,34 +205,14 @@ See [hardware/hardware.md](hardware/hardware.md) for the full parts list.
 - Persist data in a proper database instead of a flat JSON file
 - Add authentication so the dashboard isn't open to anyone on the network
 
-## Authors
+# Team
 
--T Hemachandiran
-- Tharani R 
+This project was developed collaboratively.
 
+### Team Members
 
-## Project Structure
-
-```text
-MediBot---Medicine-Reminder-Bot/
-├── README.md
-├── .gitignore
-├── docs/
-├── images/
-├── demo/
-├── software/
-│   └── software_used.md
-├── hardware/
-│   └── hardware.md
-├── server/                 # Runs on the PC/server hosting the dashboard
-│   ├── app.py              # Flask server: web UI + reminder API
-│   ├── static/
-│   ├── templates/
-│   ├── data/
-│   └── requirements.txt
-└── android/                # Runs on the Android device via SL4A
-    └── call_reminder.py
-```
+- T. Hemachandiran
+- Tharani R.
 
 ## Setup
 
@@ -140,6 +229,11 @@ MediBot---Medicine-Reminder-Bot/
    http://127.0.0.1:5000/
    ```
 4. Copy `android/call_reminder.py` onto the Android device and run it under SL4A to enable the reminder calls.
+
+# Disclaimer
+
+This repository showcases the software implementation developed as part of an academic IoT healthcare project. The software components presented here demonstrate the web-based reminder management system and Android integration developed for the overall prototype.
+
 
 ## Notes
 
