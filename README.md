@@ -8,7 +8,6 @@
 ![Arduino](https://img.shields.io/badge/Arduino-Embedded-blue)
 ![Android](https://img.shields.io/badge/Android-SL4A-brightgreen)
 
----
 
 # Project Overview
 
@@ -18,15 +17,11 @@ MediBot is an IoT-based healthcare prototype that integrates embedded hardware w
 
 The project combines embedded systems, web technologies, and Android automation to provide a practical medication reminder solution.
 
----
-
 # Problem Statement
 
 Many elderly patients forget to take medicines on time due to memory loss, busy schedules, or the absence of caregivers. Conventional reminder methods such as alarms and mobile notifications are often ignored or dismissed.
 
 A reliable reminder mechanism capable of actively notifying patients and allowing caregivers to monitor scheduled reminders can significantly improve medication adherence.
-
----
 
 # Proposed Solution
 
@@ -41,8 +36,6 @@ MediBot provides:
 
 The embedded hardware and Android device work together with the web application to deliver timely reminders.
 
----
-
 # Features
 
 - Add patient medicine schedules
@@ -54,8 +47,6 @@ The embedded hardware and Android device work together with the web application 
 - Live dashboard with Active and Finished reminders
 - Local JSON data storage
 - Lightweight Flask backend
-
----
 
 # Technology Stack
 
@@ -78,8 +69,6 @@ The embedded hardware and Android device work together with the web application 
 ### Data Storage
 
 - JSON
-
----
 
 # System Architecture
 
@@ -105,8 +94,6 @@ Caregiver
  Patient
 ```
 
----
-
 # Workflow
 
 1. Caregiver registers a patient's medication schedule through the web dashboard.
@@ -116,8 +103,6 @@ Caregiver
 5. The Android device announces the reminder using Text-to-Speech and places a phone call.
 6. Call status is sent back to the server.
 7. The dashboard updates the reminder status automatically.
-
----
 
 # My Contribution
 
@@ -132,8 +117,6 @@ This project was developed as a collaborative IoT healthcare project.
 - Integrated the Flask backend with the Android reminder application.
 - Developed reminder status tracking and dashboard updates.
 - Participated in software testing, debugging, and system integration.
-
----
 
 # Repository Structure
 
@@ -157,20 +140,6 @@ MediBot---Medicine-Reminder-Bot/
 ├── demo/
 └── README.md
 ```
-
----
-
-# Hardware Components
-
-See **hardware/hardware.md** for the complete list of hardware components used in the IoT prototype.
-
----
-
-# Software Components
-
-See **software/software_used.md** for all software frameworks and libraries used in the project.
-
----
 
 ## Project Images
 
