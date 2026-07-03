@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MediBot | Medicine Reminder</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="bg-glow"></div>
+
+    <div class="app">
+        <header class="topbar">
+            <div class="brand">
+                <span class="brand-mark">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 2L4 6V12C4 17 7.5 21 12 22C16.5 21 20 17 20 12V6L12 2Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+                        <path d="M12 8V16M8 12H16" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+                    </svg>
+                </span>
+                <div>
+                    <h1>MediBot</h1>
+                    <p>Automated Medicine Reminder System</p>
+                </div>
+            </div>
+            <div class="status-pill">
+                <span class="dot"></span>
+                System Online
+            </div>
+        </header>
+
+        <main class="grid">
+            <section class="card form-card">
+                <div class="card-head">
+                    <h2>New Reminder</h2>
+                    <p>Schedule a call-based medicine reminder for a patient.</p>
+                </div>
+
+                <form id="reminder-form" novalidate>
+                    <div class="field">
+                        <label for="name">Patient Name</label>
+                        <input type="text" id="name" name="name" placeholder="e.g. Ananya Sharma" required>
+                    </div>
+
+                    <div class="field">
+                        <label for="phone">Phone Number</label>
+                        <input type="tel" id="phone" name="phone" placeholder="e.g. +91 98765 43210" pattern="[0-9+\-\s]{7,15}" required>
+                    </div>
+
+                    <div class="field">
+                        <label for="time">Reminder Time</label>
+                        <input type="time" id="time" name="time" required>
+                    </div>
+
+                    <div class="field">
+                        <label>Medicines</label>
+                        <div id="medicine-rows" class="medicine-rows">
+                            <div class="medicine-row">
+                                <input type="text" name="medicine_name" placeholder="Medicine name" required>
+                                <input type="text" name="dosage" placeholder="Dosage (e.g. 500mg)">
+                                <button type="button" class="btn-remove-row" aria-label="Remove medicine" disabled>
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M6 6L18 18M6 18L18 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                        <button type="button" id="add-medicine" class="btn-secondary">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M12 5V19M5 12H19" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                            </svg>
+                            Add More Medicines
+                        </button>
+                    </div>
+
+                    <button type="submit" class="btn-primary">
+                        <span>Add Reminder</span>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M5 12H19M19 12L13 6M19 12L13 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </button>
+                </form>
+
+                <div id="toast" class="toast" role="status" aria-live="polite"></div>
+            </section>
+
+            <div class="list-column">
+            <section class="card list-card">
+                <div class="card-head">
+                    <h2>Active Reminders</h2>
+                    <p><span id="reminder-count">0</span> scheduled</p>
+                </div>
+
+                <ul id="reminder-list" class="reminder-list">
+                    {% for patient in active_patients %}
+                    <li class="reminder-item" data-time="{{ patient.time }}">
+                        <div class="avatar">{{ patient.name[0]|upper }}</div>
+                        <div class="reminder-info">
+                            <span class="reminder-name">{{ patient.name }}</span>
+                            <span class="reminder-meta">{{ patient.phone }}</span>
+                            {% if patient.medicines %}
+                            <div class="medicine-chips">
+                                {% for med in patient.medicines %}
+                                <span class="medicine-chip">{{ med.name }}{% if med.dosage %} &middot; {{ med.dosage }}{% endif %}</span>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="time-block">
+                            <span class="reminder-time">{{ patient.time }}</span>
+                            <span class="reminder-countdown">--</span>
+                        </div>
+                    </li>
+                    {% endfor %}
+                </ul>
+
+                <div id="empty-state" class="empty-state">
+                    <p>No reminders scheduled yet.</p>
+                    <span>Add one using the form on the left.</span>
+                </div>
+            </section>
+
+            <section class="card list-card finished-card">
+                <div class="card-head">
+                    <h2>Finished Reminders</h2>
+                    <p><span id="finished-count">0</span> completed today</p>
+                </div>
+
+                <ul id="finished-list" class="reminder-list">
+                    {% for patient in finished_patients %}
+                    <li class="reminder-item reminder-item-finished" data-time="{{ patient.time }}">
+                        <div class="avatar avatar-done">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M5 12L10 17L19 8" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </div>
+                        <div class="reminder-info">
+                            <span class="reminder-name">{{ patient.name }}</span>
+                            <span class="reminder-meta">{{ patient.phone }}</span>
+                            {% if patient.medicines %}
+                            <div class="medicine-chips">
+                                {% for med in patient.medicines %}
+                                <span class="medicine-chip">{{ med.name }}{% if med.dosage %} &middot; {{ med.dosage }}{% endif %}</span>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="time-block">
+                            <span class="reminder-time">{{ patient.time }}</span>
+                            <span class="reminder-countdown reminder-done">Completed</span>
+                        </div>
+                    </li>
+                    {% endfor %}
+                </ul>
+
+                <div id="finished-empty-state" class="empty-state">
+                    <p>No reminders finished yet.</p>
+                    <span>Completed reminders will appear here.</span>
+                </div>
+            </section>
+            </div>
+        </main>
+
+        <footer class="footer">
+            <p>MediBot &mdash; keeping medication schedules on track.</p>
+        </footer>
+    </div>
+
+    <template id="medicine-row-template">
+        <div class="medicine-row">
+            <input type="text" name="medicine_name" placeholder="Medicine name" required>
+            <input type="text" name="dosage" placeholder="Dosage (e.g. 500mg)">
+            <button type="button" class="btn-remove-row" aria-label="Remove medicine">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M6 6L18 18M6 18L18 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+            </button>
+        </div>
+    </template>
+
+    <script>
+        const form = document.getElementById('reminder-form');
+        const list = document.getElementById('reminder-list');
+        const emptyState = document.getElementById('empty-state');
+        const countEl = document.getElementById('reminder-count');
+        const finishedList = document.getElementById('finished-list');
+        const finishedEmptyState = document.getElementById('finished-empty-state');
+        const finishedCountEl = document.getElementById('finished-count');
+        const toast = document.getElementById('toast');
+        const medicineRows = document.getElementById('medicine-rows');
+        const addMedicineBtn = document.getElementById('add-medicine');
+        const medicineRowTemplate = document.getElementById('medicine-row-template');
+
+        function updateRemoveButtons() {
+            const rows = medicineRows.querySelectorAll('.medicine-row');
+            rows.forEach((row) => {
+                row.querySelector('.btn-remove-row').disabled = rows.length === 1;
+            });
+        }
+
+        addMedicineBtn.addEventListener('click', () => {
+            const clone = medicineRowTemplate.content.cloneNode(true);
+            medicineRows.appendChild(clone);
+            updateRemoveButtons();
+        });
+
+        medicineRows.addEventListener('click', (e) => {
+            const removeBtn = e.target.closest('.btn-remove-row');
+            if (!removeBtn) return;
+            const row = removeBtn.closest('.medicine-row');
+            if (medicineRows.querySelectorAll('.medicine-row').length > 1) {
+                row.remove();
+                updateRemoveButtons();
+            }
+        });
+
+        function updateCount() {
+            const count = list.querySelectorAll('.reminder-item').length;
+            countEl.textContent = count;
+            emptyState.style.display = count === 0 ? 'block' : 'none';
+
+            const finishedCount = finishedList.querySelectorAll('.reminder-item').length;
+            finishedCountEl.textContent = finishedCount;
+            finishedEmptyState.style.display = finishedCount === 0 ? 'block' : 'none';
+        }
+
+        function showToast(message, isError = false) {
+            toast.textContent = message;
+            toast.classList.toggle('toast-error', isError);
+            toast.classList.add('toast-visible');
+            setTimeout(() => toast.classList.remove('toast-visible'), 2600);
+        }
+
+        const CHECK_ICON = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M5 12L10 17L19 8" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>`;
+
+        // Web Audio beep for due reminders
+        let audioCtx = null;
+
+        function ensureAudioContext() {
+            if (!audioCtx) {
+                const AudioContextCtor = window.AudioContext || window.webkitAudioContext;
+                if (!AudioContextCtor) return null;
+                audioCtx = new AudioContextCtor();
+            }
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+            return audioCtx;
+        }
+
+        // Browsers block audio until a user gesture happens; unlock as early as possible.
+        ['click', 'keydown', 'touchstart'].forEach((evt) => {
+            document.addEventListener(evt, ensureAudioContext, { once: true });
+        });
+
+        function playBeep(times = 2) {
+            const ctx = ensureAudioContext();
+            if (!ctx) return;
+
+            for (let i = 0; i < times; i++) {
+                const startTime = ctx.currentTime + i * 0.35;
+                const oscillator = ctx.createOscillator();
+                const gain = ctx.createGain();
+
+                oscillator.type = 'sine';
+                oscillator.frequency.value = 880;
+
+                gain.gain.setValueAtTime(0.0001, startTime);
+                gain.gain.exponentialRampToValueAtTime(0.3, startTime + 0.02);
+                gain.gain.exponentialRampToValueAtTime(0.0001, startTime + 0.25);
+
+                oscillator.connect(gain);
+                gain.connect(ctx.destination);
+                oscillator.start(startTime);
+                oscillator.stop(startTime + 0.25);
+            }
+        }
+
+        function isTimePassed(timeStr) {
+            const now = new Date();
+            const current = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+            return timeStr <= current;
+        }
+
+        function formatCountdown(timeStr) {
+            const [hours, minutes] = timeStr.split(':').map(Number);
+            if (Number.isNaN(hours) || Number.isNaN(minutes)) return '--';
+
+            const now = new Date();
+            const target = new Date();
+            target.setHours(hours, minutes, 0, 0);
+
+            let diffMs = target - now;
+            if (diffMs < 0) diffMs += 24 * 60 * 60 * 1000;
+            const diffMins = Math.round(diffMs / 60000);
+
+            if (diffMins === 0) return 'Now';
+            if (diffMins < 60) return `in ${diffMins} min`;
+
+            const h = Math.floor(diffMins / 60);
+            const m = diffMins % 60;
+            return `in ${h}h ${m}m`;
+        }
+
+        function moveToFinished(item) {
+            item.classList.remove('reminder-item-new');
+            item.classList.add('reminder-item-finished');
+
+            const avatar = item.querySelector('.avatar');
+            avatar.classList.add('avatar-done');
+            avatar.innerHTML = CHECK_ICON;
+
+            const badge = item.querySelector('.reminder-countdown');
+            badge.textContent = 'Completed';
+            badge.classList.add('reminder-done');
+
+            finishedList.prepend(item);
+
+            const name = item.querySelector('.reminder-name')?.textContent || 'Reminder';
+            playBeep();
+            showToast(`It's time! ${name}'s medicine reminder has arrived.`);
+        }
+
+        function refreshCountdowns() {
+            Array.from(list.querySelectorAll('.reminder-item')).forEach((item) => {
+                const timeStr = item.dataset.time;
+                if (!timeStr) return;
+
+                if (isTimePassed(timeStr)) {
+                    moveToFinished(item);
+                    return;
+                }
+
+                const badge = item.querySelector('.reminder-countdown');
+                if (badge) badge.textContent = formatCountdown(timeStr);
+            });
+            updateCount();
+        }
+
+        function collectMedicines() {
+            const names = Array.from(form.querySelectorAll('input[name="medicine_name"]')).map(i => i.value.trim());
+            const dosages = Array.from(form.querySelectorAll('input[name="dosage"]')).map(i => i.value.trim());
+            return names
+                .map((name, i) => ({ name, dosage: dosages[i] }))
+                .filter(m => m.name);
+        }
+
+        function addReminderToList(name, phone, time, medicines) {
+            const overdue = isTimePassed(time);
+            const li = document.createElement('li');
+            li.className = 'reminder-item reminder-item-new' + (overdue ? ' reminder-item-finished' : '');
+            li.dataset.time = time;
+
+            const chips = medicines.length
+                ? `<div class="medicine-chips">${medicines.map(m =>
+                    `<span class="medicine-chip">${m.name}${m.dosage ? ' &middot; ' + m.dosage : ''}</span>`
+                  ).join('')}</div>`
+                : '';
+
+            li.innerHTML = `
+                <div class="avatar ${overdue ? 'avatar-done' : ''}">${overdue ? CHECK_ICON : name.charAt(0).toUpperCase()}</div>
+                <div class="reminder-info">
+                    <span class="reminder-name"></span>
+                    <span class="reminder-meta"></span>
+                    ${chips}
+                </div>
+                <div class="time-block">
+                    <span class="reminder-time"></span>
+                    <span class="reminder-countdown ${overdue ? 'reminder-done' : ''}">${overdue ? 'Completed' : '--'}</span>
+                </div>
+            `;
+            li.querySelector('.reminder-name').textContent = name;
+            li.querySelector('.reminder-meta').textContent = phone;
+            li.querySelector('.reminder-time').textContent = time;
+
+            if (overdue) {
+                finishedList.prepend(li);
+            } else {
+                list.prepend(li);
+            }
+            updateCount();
+            refreshCountdowns();
+        }
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(form);
+            const name = formData.get('name');
+            const phone = formData.get('phone');
+            const time = formData.get('time');
+            const medicines = collectMedicines();
+
+            const submitBtn = form.querySelector('button[type="submit"]');
+            submitBtn.disabled = true;
+
+            try {
+                const res = await fetch('/add_reminder', { method: 'POST', body: formData });
+                if (!res.ok) throw new Error('Request failed');
+                addReminderToList(name, phone, time, medicines);
+                form.reset();
+                medicineRows.querySelectorAll('.medicine-row').forEach((row, i) => { if (i > 0) row.remove(); });
+                updateRemoveButtons();
+                showToast('Reminder added successfully.');
+            } catch (err) {
+                showToast('Could not add reminder. Please try again.', true);
+            } finally {
+                submitBtn.disabled = false;
+            }
+        });
+
+        updateCount();
+        refreshCountdowns();
+        setInterval(refreshCountdowns, 10000);
+    </script>
+</body>
+</html>
