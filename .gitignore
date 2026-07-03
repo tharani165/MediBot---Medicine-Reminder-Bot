@@ -1,0 +1,7 @@
+__pycache__/
+*.py[cod]
+*.log
+*.json
+!requirements.txt
+.env
+.vscode/
